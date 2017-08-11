@@ -105,7 +105,7 @@
         "config"
       ],
       "defines": [
-        "MBEDTLS_CONFIG_FILE=\"config-ecc-ccm-rpk-dtls1_2.h\""
+        "MBEDTLS_CONFIG_FILE=\"config-psk-dtls1_2.h\""
       ]
     },
     {
@@ -127,7 +127,7 @@
         "mbedcrypto"
       ],
       "defines": [
-        "MBEDTLS_CONFIG_FILE=\"config-ecc-ccm-rpk-dtls1_2.h\""
+        "MBEDTLS_CONFIG_FILE=\"config-psk-dtls1_2.h\""
       ]
     }
   ]
