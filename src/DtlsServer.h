@@ -17,6 +17,16 @@
 #include "mbedtls/ssl_cache.h"
 #endif
 
+#ifdef MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED
+typedef struct psk_entry psk_entry;
+struct psk_entry {
+	const char *name;
+	size_t key_len;
+	unsigned char key[MBEDTLS_PSK_MAX_LEN];
+	psk_entry *next;
+};
+#endif
+
 class DtlsServer : public Nan::ObjectWrap {
 public:
 	static Nan::Persistent<v8::FunctionTemplate> constructor;
@@ -38,6 +48,9 @@ private:
 	mbedtls_ssl_config conf;
 	mbedtls_x509_crt srvcert;
 	mbedtls_pk_context pkey;
+#ifdef MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED
+	psk_entry *psk_info;
+#endif
 #if defined(MBEDTLS_SSL_CACHE_C)
 	mbedtls_ssl_cache_context cache;
 #endif
