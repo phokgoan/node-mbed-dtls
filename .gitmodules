@@ -1,3 +1,6 @@
 [submodule "mbedtls"]
 	path = mbedtls
 	url = https://github.com/spark/mbedtls.git
+[submodule "segfault-handler"]
+	path = segfault-handler
+	url = https://github.com/ddopson/node-segfault-handler.git
