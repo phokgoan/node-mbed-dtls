@@ -9,10 +9,6 @@
 #define mbedtls_printf	printf
 #define mbedtls_fprintf	fprintf
 
-#define DFL_PSK				""
-#define DFL_PSK_IDENTITY	"Client_identity"
-#define DFL_PSK_LIST		NULL
-
 using namespace node;
 
 /*
@@ -24,13 +20,6 @@ using namespace node;
 		if( ++p > end )	\
 			goto error;	\
 	*p++ = '\0';
-
-typedef struct options options;
-struct options {
-	const char *psk;			/* the pre-shared key						*/
-	const char *psk_identity;	/* the pre-shared key identity				*/
-	char *psk_list;				/* list of PSK id/key pairs for callback	*/
-};
 
 options g_opt;
 
@@ -184,6 +173,12 @@ DtlsServer::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 
 	Nan::SetAccessor(ctorInst, Nan::New("handshakeTimeoutMin").ToLocalChecked(), 0, SetHandshakeTimeoutMin);
 
+#if defined(MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED)
+	Nan::SetAccessor(ctorInst, Nan::New("psk").ToLocalChecked(), 0, SetPsk);
+	Nan::SetAccessor(ctorInst, Nan::New("psk_identity").ToLocalChecked(), 0, SetPskIdentity);
+	Nan::SetAccessor(ctorInst, Nan::New("psk_list").ToLocalChecked(), 0, SetPskList);
+#endif
+
 	Nan::Set(target, Nan::New("DtlsServer").ToLocalChecked(), ctor->GetFunction());
 }
 
@@ -235,6 +230,9 @@ DtlsServer::DtlsServer(const unsigned char *srv_key,
 #endif
 
 #if defined(MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED)
+	mbedtls_printf("PSK: %s\n", opts.psk);
+	mbedtls_printf("PSK Identity: %s\n", opts.psk_identity);
+	mbedtls_printf("PSK List: %s\n", opts.psk_list);
 	/*
 	 * Unhexify the pre-shared key and parse the list if any given
 	 */
@@ -333,6 +331,21 @@ NAN_SETTER(DtlsServer::SetHandshakeTimeoutMin) {
 	DtlsServer *server = Nan::ObjectWrap::Unwrap<DtlsServer>(info.This());
 	mbedtls_ssl_conf_handshake_timeout(server->config(), value->Uint32Value(), server->config()->hs_timeout_max);
 }
+
+#if defined(MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED)
+NAN_SETTER(DtlsServer::SetPsk) {
+	DtlsServer *server = Nan::ObjectWrap::Unwrap<DtlsServer>(info.This());
+	server->opts.psk = (const char *) *(value->ToString());
+}
+NAN_SETTER(DtlsServer::SetPskIdentity) {
+	DtlsServer *server = Nan::ObjectWrap::Unwrap<DtlsServer>(info.This());
+	server->opts.psk_identity = (const char *) *(value->ToString());
+}
+NAN_SETTER(DtlsServer::SetPskList) {
+	DtlsServer *server = Nan::ObjectWrap::Unwrap<DtlsServer>(info.This());
+	server->opts.psk_list = (char *) *(value->ToString());
+}
+#endif
 
 void DtlsServer::throwError(int ret) {
 	char error_buf[100];
